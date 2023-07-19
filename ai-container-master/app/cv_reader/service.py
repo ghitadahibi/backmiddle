@@ -259,7 +259,7 @@ Questions techniques:
 2. Quelle est votre expérience avec les systèmes d'exploitation et les protocoles réseau?
 3. Quels processus de développement agile utilisez-vous?
 """
-    myclient = pymongo.MongoClient("mongodb://root:MyPassw0rd@localhost:27017/?authMechanism=DEFAULT")
+    myclient = pymongo.MongoClient("mongodb://localhost:27017")
     mydb = myclient["mydatabase"]
     mycol = mydb["cvs"]
     mycol.insert_one(text_to_data(text))
@@ -325,7 +325,7 @@ def read_cv(cv):
     summary = chain.run(input_documents=pages)
 
     response = "Titre:" + result + "\nRésumé:" + summary
-    myclient = pymongo.MongoClient("mongodb://root:MyPassw0rd@localhost:27017/?authMechanism=DEFAULT")
+    myclient = pymongo.MongoClient("mongodb://localhost:27017")
     mydb = myclient["mydatabase"]
     mycol = mydb["cvs"]
     mycol.insert_one(text_to_data(response))
