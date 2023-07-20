@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>{{ doc['Nom complet'] }} - CV</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			font-size: 14px;
+			line-height: 1.5;
+			color: #333;
+		}
+
+		h1, h2, h3, h4, h5, h6 {
+			margin-top: 0;
+			margin-bottom: 10px;
+			font-weight: bold;
+			color: #333;
+		}
+
+		h1 {
+			font-size: 24px;
+		}
+
+		h2 {
+			font-size: 20px;
+		}
+
+		h3 {
+			font-size: 18px;
+		}
+
+		.section {
+			margin-bottom: 20px;
+		}
+
+		.section-title {
+			font-size: 18px;
+			margin-bottom: 10px;
+		}
+
+		.section-content {
+			margin-left: 20px;
+			font-size: 16px;
+			line-height: 1.5;
+		}
+
+		.skills-list {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+			display: inline-block;
+			margin-left: 20px;
+			font-size: 16px;
+			line-height: 1.5;
+		}
+
+		.skills-list li {
+			display: inline;
+			margin-right: 10px;
+		}
+
+		.summary {
+			font-size: 16px;
+			line-height: 1.5;
+			margin-left: 20px;
+		}
+
+		.contact-info {
+			margin-bottom: 20px;
+		}
+
+		.contact-info p {
+			margin: 0;
+			font-size: 16px;
+			line-height: 1.5;
+		}
+	</style>
+</head>
+<body>
+	<div class="contact-info">
+		<p>{{ doc['Nom complet'] }}</p>
+		<p>{{ doc['Ville de résidence'] }}</p>
+		<p>{{ doc['Niveau des études'] }}</p>
+		<p>{{ doc['Institution'] }}</p>
+		<p>{{ doc['Technologies et domaines d\'expertise'] }}</p>
+	</div>
+
+	<div class="section experience">
+		<h2 class="section-title">Expérience professionnelle</h2>
+		{% for experience in doc['Expérience professionnelle'] %}
+			<div class="section-content">
+				<h3>{{ experience['Titre du poste'] }}</h3>
+				<p>{{ experience['Nom de l\'entreprise'] }}, {{ experience['Dates d\'emploi'] }}</p>
+				<ul>
+					{% for task in experience['Description des tâches et des réalisations'] %}
+						<li>{{ task }}</li>
+					{% endfor %}
+				</ul>
+			</div>
+		{% endfor %}
+	</div>
+
+	<div class="section education">
+		<h2 class="section-title">Formation</h2>
+		{% for formation in doc['Formation'] %}
+			<div class="section-content">
+				<h3>{{ formation['Diplôme'] }}</h3>
+				<p>{{ formation['Nom de l\'établissement'] }}, {{ formation['Dates de scolarité'] }}</p>
+			</div>
+		{% endfor %}
+	</div>
+
+	<div class="section skills">
+		<h2 class="section-title">Compétences</h2>
+		<ul class="skills-list">
+			{% for skill in doc['Technologies et domaines d\'expertise'].split(', ') %}
+				<li>{{ skill }}</li>
+			{% endfor %}
+		</ul>
+	</div>
+
+	<div class="section summary">
+		<h2 class="section-title">Résumé</h2>
+		<p>{{ doc['Résumé'] }}</p>
+	</div>
+
+</body>
+</html>
