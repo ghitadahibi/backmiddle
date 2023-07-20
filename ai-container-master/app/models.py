@@ -30,7 +30,6 @@ def get_HF_embeddings(sentences):
   return embeddings
 
 
-
 def get_doc2vec_embeddings(JD, text_resume):
     nltk.download("punkt")
     data = [JD]
@@ -52,11 +51,14 @@ def get_doc2vec_embeddings(JD, text_resume):
 
 
 def cosine(embeddings1, embeddings2):
-  # get the match percentage
-  score_list = []
-  for i in embeddings1:
-      matchPercentage = cosine_similarity(np.array(i), np.array(embeddings2))
-      matchPercentage = np.round(matchPercentage, 4)*100 # round to two decimal
-      print("Your resume matches about" + str(matchPercentage[0])+ "% of the job description.")
-      score_list.append(str(matchPercentage[0][0]))
-  return score_list
+    # get the match percentage
+    score_list = []
+    for i in embeddings1:
+        # Reshape input arrays to have two dimensions
+        i_reshaped = np.array(i).reshape(1, -1)
+        embeddings2_reshaped = np.array(embeddings2).reshape(1, -1)
+        matchPercentage = cosine_similarity(i_reshaped, embeddings2_reshaped)
+        matchPercentage = np.round(matchPercentage, 4)*100 # round to two decimal
+        print("Your resume matches about" + str(matchPercentage[0])+ "% of the job description.")
+        score_list.append(str(matchPercentage[0][0]))
+    return score_list
