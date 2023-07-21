@@ -11,19 +11,12 @@ import os
 import io
 from PyPDF2 import PdfReader
 templates = Jinja2Templates(directory="templates")
-
-load_dotenv()
-app=FastAPI()
-
 from cv_reader import controller as cv_reader
 from chat_pdf import controller as chat_pdf
-
 import pymongo
 from bson.objectid import ObjectId
-
 import pymongo
 from bson.objectid import ObjectId
-
 import os
 import pymongo
 from fastapi import FastAPI, UploadFile, File
@@ -34,23 +27,19 @@ import pymongo
 from fastapi import FastAPI, File, UploadFile
 
 
+load_dotenv()
+app=FastAPI()
 
-app = FastAPI()
+
 
 @app.post("/uploadjoboffre")
 async def upload_job_offre(joboffre_nom: str, joboffre: UploadFile = File(...)):
     if joboffre.content_type == 'application/pdf':
-        # Lire le contenu du fichier
-        content = await joboffre.read()
-
-        # Enregistrer le fichier PDF sur le disque avec le nom donné
-        with open(joboffre_nom, 'wb') as f:
-            f.write(content)
-
         # Extraire du texte à partir du fichier PDF
-        with open(joboffre_nom, 'rb') as f:
-            reader = PdfReader(f)
-            text = ''
+        content = await joboffre.read()
+        text = ''
+        with io.BytesIO(content) as pdf:
+            reader = PdfReader(pdf)
             for page in reader.pages:
                 text += page.extract_text()
 
@@ -77,6 +66,7 @@ async def test_match(job_name: str, cv: UploadFile = File(...)):
     client = pymongo.MongoClient("mongodb://localhost:27017/")
     db = client["mydatabase"]
     collection = db["joboffers"]
+    jobmatching_collection = db["jobmatching"]
         
     # Requête pour récupérer les offres d'emploi correspondant au nom de poste
     results = collection.find({'jobOfferName': job_name})
@@ -89,13 +79,22 @@ async def test_match(job_name: str, cv: UploadFile = File(...)):
         cv_file = io.BytesIO(cv_contents)
         result = cv_reader.read_cv(cv_file)
         print(result)
-       
-        
+               
         
         # Calculer la similarité entre le CV et l'offre d'emploi
         JD_embeddings = get_HF_embeddings([document['content']])
         resume_embeddings = get_HF_embeddings([result])
         similarity_scores = cosine(JD_embeddings, resume_embeddings)
+        
+        # Insérer le score de similarité et le lien vers le CV dans la collection jobmatching
+        jobmatching_collection.insert_one(
+            {
+                "job_name": job_name,
+                "cv_name": cv.filename,
+                "similarity_score": similarity_scores
+            }
+        )
+        
         return {'Similarity Scores': similarity_scores}
         
     return {'message': 'No job offer found for the given job name.'}
