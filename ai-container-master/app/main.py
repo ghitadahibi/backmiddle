@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, Request, File
+from fastapi import FastAPI, UploadFile, Request, File,Form
 from dotenv import load_dotenv
 from models import get_HF_embeddings, cosine
 import pdfplumber
@@ -60,8 +60,7 @@ app.include_router(cv_reader.router)
 app.include_router(chat_pdf.router)
 
 @app.post("/testmatching")
-async def test_match(job_name: str, cv: UploadFile = File(...)):
-        
+async def test_match(cv: UploadFile = File(...), job_name: str = Form(...)):
     # Connexion à la base de données MongoDB
     client = pymongo.MongoClient("mongodb://localhost:27017/")
     db = client["mydatabase"]
@@ -98,4 +97,3 @@ async def test_match(job_name: str, cv: UploadFile = File(...)):
         return {'Similarity Scores': similarity_scores}
         
     return {'message': 'No job offer found for the given job name.'}
-
