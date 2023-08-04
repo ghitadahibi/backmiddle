@@ -16,6 +16,7 @@ from chat_pdf import controller as chat_pdf
 import pymongo
 from bson.objectid import ObjectId
 import pymongo
+import re
 from bson.objectid import ObjectId
 import os
 import pymongo
@@ -25,6 +26,9 @@ from chat_pdf import controller as chat_pdf
 from PyPDF2 import PdfReader
 import pymongo
 from fastapi import FastAPI, File, UploadFile
+import json
+from fastapi.responses import JSONResponse
+from bson import ObjectId
 
 
 load_dotenv()
@@ -32,8 +36,32 @@ app=FastAPI()
 
 
 
+
+
+client = pymongo.MongoClient("mongodb://localhost:27017/")
+db = client["mydatabase"]
+jobmatching_collection = db["jobmatching"]
+joboffer_collection = db["joboffers"]
+# Route pour récupérer les champs job_name, cv_name et similarity_score de tous les documents de la collection jobmatching
+@app.get("/jobmatching")
+async def get_jobmatching():
+    jobmatching_list = []
+    for jobmatching in jobmatching_collection.find({}, {"_id": 0, "job_name": 1, "email": 1, "similarity_score": 1}):
+        jobmatching_list.append(jobmatching)
+    return jobmatching_list
+
+
+@app.get("/joboffer")
+async def get_jobmatching():
+    joboffer_list = []
+    for joboffer in joboffer_collection.find({}, {"_id": 0, "jobOfferName": 1, "content": 1}):
+        joboffer_list.append(joboffer)
+    return joboffer_list
+
+
+
 @app.post("/uploadjoboffre")
-async def upload_job_offre(joboffre_nom: str, joboffre: UploadFile = File(...)):
+async def upload_job_offre( joboffre: UploadFile = File(...),joboffre_nom: str = Form(...)):
     if joboffre.content_type == 'application/pdf':
         # Extraire du texte à partir du fichier PDF
         content = await joboffre.read()
@@ -78,6 +106,7 @@ async def test_match(cv: UploadFile = File(...), job_name: str = Form(...)):
         cv_file = io.BytesIO(cv_contents)
         result = cv_reader.read_cv(cv_file)
         print(result)
+        email = re.search(r'Email: (.*)', result).group(1)
                
         
         # Calculer la similarité entre le CV et l'offre d'emploi
@@ -89,7 +118,7 @@ async def test_match(cv: UploadFile = File(...), job_name: str = Form(...)):
         jobmatching_collection.insert_one(
             {
                 "job_name": job_name,
-                "cv_name": cv.filename,
+                "email": email,
                 "similarity_score": similarity_scores
             }
         )
@@ -97,3 +126,20 @@ async def test_match(cv: UploadFile = File(...), job_name: str = Form(...)):
         return {'Similarity Scores': similarity_scores}
         
     return {'message': 'No job offer found for the given job name.'}
+
+client = pymongo.MongoClient("mongodb://localhost:27017/")
+db = client["mydatabase"]
+joboffer_collection = db["joboffers"]
+
+@app.delete("/deleteall")
+async def delete_all_joboffers():
+    result = joboffer_collection.delete_many({})
+    return {"deleted_count": result.deleted_count}
+
+@app.delete("/joboffers/{jobOfferName}")
+async def delete_joboffer(jobOfferName: str):
+    result = joboffer_collection.delete_one({"jobOfferName": jobOfferName})
+    if result.deleted_count == 1:
+        return {"message": f"Job offer with  {jobOfferName} deleted successfully"}
+    else:
+        return {"message": "Job offer not found"}

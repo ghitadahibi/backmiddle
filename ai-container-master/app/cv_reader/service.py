@@ -203,7 +203,8 @@ def read_cv_openai(cv):
         "Dans quelle entreprise il a passé l'expérience la plus récente  ? Entreprise:",
         "Quelle est l'intitulé du poste ? Dernier poste:",
         "Quel est le nombre total d'années d'expérience professionnelle ? Années d'expérience:",
-        "Quelle est la ville de résidence ? Ville de résidence:"
+        "Quelle est la ville de résidence ? Ville de résidence:",
+        "Quelle est votre email ? Email"
     ]
     
     summary = chain.run(input_documents=docs, questions=query)
@@ -302,7 +303,8 @@ def read_cv(cv):
         "Dans quelle entreprise il a passé l'expérience la plus récente  ? Entreprise:",
         "Quelle est l'intitulé du poste ? Dernier poste:",
         "Quel est le nombre total d'années d'expérience professionnelle ? Années d'expérience:",
-        "Quelle est la ville de résidence ? Ville de résidence:"
+        "Quelle est la ville de résidence ? Ville de résidence:",
+        "Quelle votre email ? Email:"
     ]
     
     result = chain.run(input_documents=pages, questions=query)
@@ -396,5 +398,11 @@ def read_cv_free(cv):
     response += "\nVille de résidence : "
     docs = db.similarity_search(query)
     response += chain.run(input_documents=docs, question=query)
+
+    query = "Quelle est votre email ?"
+    response += "\nEmail: "
+    docs = db.similarity_search(query)
+    response += chain.run(input_documents=docs, question=query)
+
 
     return response
